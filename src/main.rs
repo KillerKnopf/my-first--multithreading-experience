@@ -1,7 +1,6 @@
 use std::{
     fmt::Display,
     io::{stdin, stdout, Write},
-    process,
     time::{Duration, Instant},
 };
 
@@ -19,6 +18,59 @@ struct AppState {
     my_results: Vec<PrimeResult>,
 }
 
+impl AppState {
+    pub fn check_results(&self) {
+        for result in &self.my_results {
+            // Get all numbers from baseline that are NOT in result
+            let undetected: Vec<&usize> = self
+                .baseline
+                .primes
+                .iter()
+                .filter(|prime| !result.primes.contains(prime))
+                .collect();
+
+            // Get all numbers form result NOT in baseline
+            let false_detected: Vec<&usize> = result
+                .primes
+                .iter()
+                .filter(|prime| !self.baseline.primes.contains(prime))
+                .collect();
+
+            // Print result of check
+            // Print if everything was ok
+            if undetected.len() > 0 && false_detected.len() > 0 {
+                println!(" {} found all primes.", result.identifier);
+                continue;
+            }
+            // Print all not found primes
+            if undetected.len() > 0 {
+                println!(" {} did not find following primes: ", result.identifier);
+                let mut s = String::from(" \t");
+                for n in undetected {
+                    s.push_str(format!("{}, ", n).as_str());
+                }
+                s.pop();
+                s.pop();
+                println!("{}", s);
+            }
+            // Print all false positives (numbers that were found but aren't primes)
+            if false_detected.len() > 0 {
+                println!(
+                    " {} found following numbers erroneously: ",
+                    result.identifier
+                );
+                let mut s = String::from(" \t");
+                for n in false_detected {
+                    s.push_str(format!("{}, ", n).as_str());
+                }
+                s.pop();
+                s.pop();
+                println!("{}", s);
+            }
+        }
+    }
+}
+
 // Struct which holds the prime generator version, the found primes and the elapsed time of the prime generator
 #[derive(Debug, Default)]
 struct PrimeResult {
@@ -27,11 +79,18 @@ struct PrimeResult {
     elapsed_time: Duration,
 }
 
-// TODO
 // Used when writing results to console (or maybe a file)
 impl Display for PrimeResult {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        todo!()
+        write!(
+            f,
+            " {}\n elapsed time: {}:{}:{}:{} (s:ms:µs:ns)",
+            self.identifier,
+            self.elapsed_time.as_secs(),
+            self.elapsed_time.subsec_millis(),
+            self.elapsed_time.subsec_micros(),
+            self.elapsed_time.subsec_nanos() % 1_000
+        )
     }
 }
 
@@ -66,15 +125,32 @@ fn main() {
     }
 
     // Run baseline and store result in appState
+    println!("\n\n Executing program with limit {}", app_state.limit);
+    println!(" --------------------");
+    println!("\n Running prime generators\n");
     app_state.baseline = run_prime_generator(
         prime_generators::generate_baseline,
         app_state.limit,
         "baseline",
     );
 
-    // Run my prime generators and store results in appState
+    // Run each of my prime generators and store results in appState
+    // Also compare the results to the baseline for correctness
+
+    // Check if algorithms worked
+    println!("\n Checking if prime numbers were found correctly\n");
+    app_state.check_results();
 
     // Write results to console
+    println!("\n\n Results");
+    println!(" --------------------\n");
+
+    println!("{}", app_state.baseline);
+    println!(" ---");
+    for result in app_state.my_results {
+        println!("{}", result);
+    }
+
     println!("\n");
 }
 
@@ -87,6 +163,8 @@ fn run_prime_generator(
     limit: usize,
     identifier: &'static str,
 ) -> PrimeResult {
+    println!("     Running {}", identifier);
+
     // Take timestamp
     let start = Instant::now();
 
@@ -95,6 +173,8 @@ fn run_prime_generator(
 
     // Calculate elapsed time
     let elapsed_time = start.elapsed();
+
+    println!("         Found {} prime numbers", primes.len());
 
     // Construct PrimeResult
     PrimeResult {
@@ -121,7 +201,7 @@ fn write_main_menu() {
     println!(" This limit is inclusive. You can choose a number between 0 and 18'446'744'073'709'551'615.");
 
     // Using print!() to write input prompt so that the user input is written immediately on the same line.
-    print!("\n Your chosen limit --> ");
+    print!("\n\t Your chosen limit --> ");
 
     // Flushing stdout because print!() does not flush unlike println!().
     // Flushing in this case means writing the buffer (String to write) to the console.
