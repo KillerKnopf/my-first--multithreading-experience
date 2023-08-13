@@ -4,6 +4,8 @@ use std::{
     time::{Duration, Instant},
 };
 
+use thousands::Separable;
+
 // Module where I put the implementations of the prime generators
 pub mod prime_generators;
 // Contains rejected code. This use is only here to enable rust-analyzer code highlights and auto complete.
@@ -123,15 +125,23 @@ fn main() {
             let mut raw_input = String::new();
             stdin().read_line(&mut raw_input).unwrap();
 
+            // Replace spacing characters which a user could have used to separate digits
+            // Allowed spacing characters are underscores, single quotes, dots and spaces
+            raw_input = raw_input
+                .replace("_", "")
+                .replace("\'", "")
+                .replace(".", "")
+                .replace(" ", "");
+
             // Parse user input into usize
-            // Trim input beforehand because it contains whitespace (probably a line break at the end)
+            // Trim input before parsing because it contains whitespace (probably a line break at the end)
             match raw_input.trim().parse::<usize>() {
                 Ok(value) => {
                     app_state.limit = value;
                     break;
                 }
                 Err(_) => {
-                    println!("\n No valid number found. Please try again.");
+                    println!("\n Unsupported number format found. Please try again.");
                     println!(" Press enter to continue");
                     stdin().read_line(&mut String::new()).unwrap();
                 }
@@ -140,7 +150,10 @@ fn main() {
         }
 
         // Run baseline and store result in appState
-        println!("\n\n Executing program with limit {}", app_state.limit);
+        println!(
+            "\n\n Executing program with limit {}",
+            app_state.limit.separate_with_spaces()
+        );
         println!(" --------------------");
         println!("\n Running prime generators\n");
         app_state.baseline = run_prime_generator(
@@ -243,6 +256,10 @@ fn write_main_menu() {
         " To run the benchmarks please enter the limit until which the prime numbers are generated."
     );
     println!(" This limit is exclusive. You can choose a number between 0 and 18'446'744'073'709'551'615.");
+    println!(" For better visual clarity you can separate the digits of your chosen number.");
+    println!(
+        " Allowed characters for separation are: underscores, single quotes, dots and spaces."
+    );
 
     // Using print!() to write input prompt so that the user input is written immediately on the same line.
     print!("\n\t Your chosen limit --> ");
