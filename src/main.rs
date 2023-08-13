@@ -6,6 +6,8 @@ use std::{
 
 // Module where I put the implementations of the prime generators
 pub mod prime_generators;
+// Contains rejected code. This use is only here to enable rust-analyzer code highlights and auto complete.
+mod rejected;
 
 // The struct holds all generated data of the program.
 #[derive(Default)]
