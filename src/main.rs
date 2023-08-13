@@ -21,6 +21,7 @@ struct AppState {
 impl AppState {
     pub fn check_results(&self) {
         for result in &self.my_results {
+            println!("     Checking {}", result.identifier);
             // Get all numbers from baseline that are NOT in result
             let undetected: Vec<&usize> = self
                 .baseline
@@ -38,13 +39,16 @@ impl AppState {
 
             // Print result of check
             // Print if everything was ok
-            if undetected.len() > 0 && false_detected.len() > 0 {
-                println!(" {} found all primes.", result.identifier);
+            if undetected.len() == 0 && false_detected.len() == 0 {
+                println!("         {} found all primes.", result.identifier);
                 continue;
             }
             // Print all not found primes
             if undetected.len() > 0 {
-                println!(" {} did not find following primes: ", result.identifier);
+                println!(
+                    "         {} did not find following primes: ",
+                    result.identifier
+                );
                 let mut s = String::from(" \t");
                 for n in undetected {
                     s.push_str(format!("{}, ", n).as_str());
@@ -56,7 +60,7 @@ impl AppState {
             // Print all false positives (numbers that were found but aren't primes)
             if false_detected.len() > 0 {
                 println!(
-                    " {} found following numbers erroneously: ",
+                    "         {} found following numbers erroneously: ",
                     result.identifier
                 );
                 let mut s = String::from(" \t");
@@ -88,8 +92,8 @@ impl Display for PrimeResult {
             self.identifier,
             self.elapsed_time.as_secs(),
             self.elapsed_time.subsec_millis(),
-            self.elapsed_time.subsec_micros(),
-            self.elapsed_time.subsec_nanos() % 1_000
+            self.elapsed_time.subsec_micros() % 1_000,
+            self.elapsed_time.subsec_nanos() % 1_000,
         )
     }
 }
@@ -135,7 +139,11 @@ fn main() {
     );
 
     // Run each of my prime generators and store results in appState
-    // Also compare the results to the baseline for correctness
+    app_state.my_results.push(run_prime_generator(
+        prime_generators::generate_primes_v1_0,
+        app_state.limit,
+        "v1_0",
+    ));
 
     // Check if algorithms worked
     println!("\n Checking if prime numbers were found correctly\n");
@@ -149,6 +157,7 @@ fn main() {
     println!(" ---");
     for result in app_state.my_results {
         println!("{}", result);
+        println!(" ---");
     }
 
     println!("\n");
@@ -198,7 +207,7 @@ fn write_main_menu() {
     println!(
         " To run the benchmarks please enter the limit until which the prime numbers are generated."
     );
-    println!(" This limit is inclusive. You can choose a number between 0 and 18'446'744'073'709'551'615.");
+    println!(" This limit is exclusive. You can choose a number between 0 and 18'446'744'073'709'551'615.");
 
     // Using print!() to write input prompt so that the user input is written immediately on the same line.
     print!("\n\t Your chosen limit --> ");
