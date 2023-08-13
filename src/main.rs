@@ -88,7 +88,7 @@ impl Display for PrimeResult {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            " {}\n elapsed time: {}:{}:{}:{} (s:ms:µs:ns)",
+            " {}\n elapsed time: {}:{:03}:{:03}:{:03} (s:ms:µs:ns)",
             self.identifier,
             self.elapsed_time.as_secs(),
             self.elapsed_time.subsec_millis(),
@@ -99,6 +99,11 @@ impl Display for PrimeResult {
 }
 
 fn main() {
+    // Registry of my prime generators
+    // Vec of tuple of string and function pointer
+    let my_prime_generators: Vec<(String, fn(usize) -> Vec<usize>)> =
+        vec![("v1.0".to_string(), prime_generators::generate_primes_v1_0)];
+
     // Initialize AppState
     let mut app_state = AppState::default();
 
@@ -139,11 +144,13 @@ fn main() {
     );
 
     // Run each of my prime generators and store results in appState
-    app_state.my_results.push(run_prime_generator(
-        prime_generators::generate_primes_v1_0,
-        app_state.limit,
-        "v1_0",
-    ));
+    for generator in my_prime_generators {
+        app_state.my_results.push(run_prime_generator(
+            generator.1,
+            app_state.limit,
+            &generator.0,
+        ));
+    }
 
     // Check if algorithms worked
     println!("\n Checking if prime numbers were found correctly\n");
@@ -170,7 +177,7 @@ fn main() {
 fn run_prime_generator(
     prime_generator: fn(usize) -> Vec<usize>,
     limit: usize,
-    identifier: &'static str,
+    identifier: &str,
 ) -> PrimeResult {
     println!("     Running {}", identifier);
 
