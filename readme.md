@@ -73,6 +73,8 @@ Found primes get inserted into the shared vec at the correct place.
 - [x] Version 1.0
 - [x] Version 1.1
 - [ ] Version 2.0
+  - not yet without blocking
+  - no impovement over v1 yet
 - [ ] Version 2.1
 - [ ] Version 3.0
 - [ ] Version 3.1

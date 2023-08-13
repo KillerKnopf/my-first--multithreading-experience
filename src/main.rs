@@ -104,6 +104,7 @@ fn main() {
     let my_prime_generators: Vec<(String, fn(usize) -> Vec<usize>)> = vec![
         ("v1.0".to_string(), prime_generators::generate_primes_v1_0),
         ("v1.1".to_string(), prime_generators::generate_primes_v1_1),
+        ("v2.0".to_string(), prime_generators::generate_primes_v2_0),
     ];
 
     'run_loop: loop {
