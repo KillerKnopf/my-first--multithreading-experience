@@ -101,73 +101,98 @@ impl Display for PrimeResult {
 fn main() {
     // Registry of my prime generators
     // Vec of tuple of string and function pointer
-    let my_prime_generators: Vec<(String, fn(usize) -> Vec<usize>)> =
-        vec![("v1.0".to_string(), prime_generators::generate_primes_v1_0)];
+    let my_prime_generators: Vec<(String, fn(usize) -> Vec<usize>)> = vec![
+        ("v1.0".to_string(), prime_generators::generate_primes_v1_0),
+        ("v1.1".to_string(), prime_generators::generate_primes_v1_1),
+    ];
 
-    // Initialize AppState
-    let mut app_state = AppState::default();
+    'run_loop: loop {
+        // Initialize AppState
+        let mut app_state = AppState::default();
 
-    // Write main menu to console
-    write_main_menu();
+        // Write main menu to console
+        write_main_menu();
 
-    // Get user input for limit, validate and store in appState
-    // Loops so that failed input results in retrys
-    loop {
-        // Get user input
-        let mut raw_input = String::new();
-        stdin().read_line(&mut raw_input).unwrap();
+        // Get user input for limit, validate and store in appState
+        // Loops so that failed input results in retrys
+        loop {
+            // Get user input
+            let mut raw_input = String::new();
+            stdin().read_line(&mut raw_input).unwrap();
 
-        // Parse user input into usize
-        // Trim input beforehand because it contains whitespace (probably a line break at the end)
-        match raw_input.trim().parse::<usize>() {
-            Ok(value) => {
-                app_state.limit = value;
-                break;
+            // Parse user input into usize
+            // Trim input beforehand because it contains whitespace (probably a line break at the end)
+            match raw_input.trim().parse::<usize>() {
+                Ok(value) => {
+                    app_state.limit = value;
+                    break;
+                }
+                Err(_) => {
+                    println!("\n No valid number found. Please try again.");
+                    println!(" Press enter to continue");
+                    stdin().read_line(&mut String::new()).unwrap();
+                }
             }
-            Err(_) => {
-                println!("\n No valid number found. Please try again.");
-                println!(" Press enter to continue");
-                stdin().read_line(&mut String::new()).unwrap();
+            write_main_menu();
+        }
+
+        // Run baseline and store result in appState
+        println!("\n\n Executing program with limit {}", app_state.limit);
+        println!(" --------------------");
+        println!("\n Running prime generators\n");
+        app_state.baseline = run_prime_generator(
+            prime_generators::generate_baseline,
+            app_state.limit,
+            "baseline",
+        );
+
+        // Run each of my prime generators and store results in appState
+        for generator in &my_prime_generators {
+            app_state.my_results.push(run_prime_generator(
+                generator.1,
+                app_state.limit,
+                &generator.0,
+            ));
+        }
+
+        // Check if algorithms worked
+        println!("\n Checking if prime numbers were found correctly\n");
+        app_state.check_results();
+
+        // Write results to console
+        println!("\n\n Results");
+        println!(" --------------------\n");
+
+        println!("{}", app_state.baseline);
+        println!(" ---");
+        for result in app_state.my_results {
+            println!("{}", result);
+            println!(" ---");
+        }
+
+        println!("\n");
+
+        loop {
+            // Ask user if he wants to redo the programm
+            print!(" Do you want to try another run? (y/n) -> ");
+            stdout().flush().unwrap();
+            // Get user input
+            let mut input = String::new();
+            stdin().read_line(&mut input).unwrap();
+
+            match input.trim() {
+                "y" | "Y" => continue 'run_loop,
+                "n" | "N" => break 'run_loop,
+                _ => {
+                    println!("     Unexpected character found. Please only enter 'y' or 'n'.");
+                }
             }
         }
-        write_main_menu();
     }
 
-    // Run baseline and store result in appState
-    println!("\n\n Executing program with limit {}", app_state.limit);
-    println!(" --------------------");
-    println!("\n Running prime generators\n");
-    app_state.baseline = run_prime_generator(
-        prime_generators::generate_baseline,
-        app_state.limit,
-        "baseline",
-    );
-
-    // Run each of my prime generators and store results in appState
-    for generator in my_prime_generators {
-        app_state.my_results.push(run_prime_generator(
-            generator.1,
-            app_state.limit,
-            &generator.0,
-        ));
-    }
-
-    // Check if algorithms worked
-    println!("\n Checking if prime numbers were found correctly\n");
-    app_state.check_results();
-
-    // Write results to console
-    println!("\n\n Results");
-    println!(" --------------------\n");
-
-    println!("{}", app_state.baseline);
-    println!(" ---");
-    for result in app_state.my_results {
-        println!("{}", result);
-        println!(" ---");
-    }
-
-    println!("\n");
+    println!("\n\n Goodbye! Press enter to close the program.");
+    let mut input = String::new();
+    stdin().read_line(&mut input).unwrap();
 }
 
 // This function wraps the prime generating functions so that their runtime is measured.

@@ -38,10 +38,6 @@ Used to determine if my multithreading solution is actually helpful.
 
 No multithreading but if statements to filter out numbers divisible by 2.  
 
-### **Version 1.2**
-
-No multithreading but if statements to filter out numbers divisible by 2 or 3.  
-
 ### **Version 2.0**
 
 Using scoped threads, writing to individual vecs that will be merged in the end.  
@@ -72,11 +68,10 @@ Found primes get inserted into the shared vec at the correct place.
 - [x] Function to print results to console
 - [x] Function to wrap algorithm versions that measures their execution time
 - [x] Function to check the results to baseline
-- [ ] Ability to rerun program
+- [x] Ability to rerun program
 - [x] Version 0
-- [ ] Version 1.0
-- [ ] Version 1.1
-- [ ] Version 1.2
+- [x] Version 1.0
+- [x] Version 1.1
 - [ ] Version 2.0
 - [ ] Version 2.1
 - [ ] Version 3.0
